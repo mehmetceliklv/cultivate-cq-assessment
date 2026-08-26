@@ -31,6 +31,7 @@ interface SubmissionRow {
 const TOKEN_KEY = 'cq_admin_token'
 
 function LoginForm({ onSuccess }: { onSuccess: (token: string) => void }) {
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -43,10 +44,10 @@ function LoginForm({ onSuccess }: { onSuccess: (token: string) => void }) {
       const res = await fetch('/api/admin-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       })
       if (!res.ok) {
-        setError('Incorrect password.')
+        setError('Incorrect email or password.')
         return
       }
       const data = await res.json()
@@ -60,32 +61,60 @@ function LoginForm({ onSuccess }: { onSuccess: (token: string) => void }) {
   }
 
   return (
-    <form onSubmit={submit} className="max-w-sm mx-auto">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6 text-center">Admin Login</h1>
-      <label className="block mb-4">
-        <span className="block text-sm font-medium text-slate-700 mb-1.5">Password</span>
-        <input
-          type="password"
-          autoFocus
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 px-4 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-        />
-      </label>
-      {error && <p className="text-sm text-rose-600 mb-4">{error}</p>}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+    <div className="max-w-sm mx-auto">
+      <Link
+        to="/"
+        className="inline-flex items-center gap-2 text-slate-700 font-medium hover:text-slate-900 mb-8"
       >
-        {loading ? 'Signing in…' : 'Sign in'}
-      </button>
-      <p className="text-center mt-6">
-        <Link to="/" className="text-sm text-blue-600 hover:underline">
-          \u2190 Back to assessment
-        </Link>
-      </p>
-    </form>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        Back to Form
+      </Link>
+
+      <div className="flex flex-col items-center text-center mb-8">
+        <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center mb-5">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="5" y="11" width="14" height="10" rx="2" />
+            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+          </svg>
+        </div>
+        <h1 className="text-2xl font-bold text-slate-900 mb-1">Admin Login</h1>
+        <p className="text-slate-500">Access the CQ Assessment Dashboard</p>
+      </div>
+
+      <form onSubmit={submit}>
+        <label className="block mb-4">
+          <span className="block text-sm font-medium text-slate-700 mb-1.5">Email</span>
+          <input
+            type="email"
+            autoFocus
+            placeholder="admin@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          />
+        </label>
+        <label className="block mb-4">
+          <span className="block text-sm font-medium text-slate-700 mb-1.5">Password</span>
+          <input
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          />
+        </label>
+        {error && <p className="text-sm text-rose-600 mb-4">{error}</p>}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+        >
+          {loading ? 'Signing in…' : 'Sign In'}
+        </button>
+      </form>
+    </div>
   )
 }
 
