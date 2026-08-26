@@ -55,7 +55,7 @@ export default function Step1Demographics({ data, onChange, onNext }: Props) {
       <div className="space-y-4 text-slate-700 leading-relaxed mb-6">
         <p>Hello!</p>
         <p>
-          This tool was developed to test your cultural intelligence under the Cultivate CQ \u2013
+          This tool was developed to test your cultural intelligence under the Cultivate CQ –
           Building Cultural Intelligence for Youth Workers within Diverse Communities project. The
           Cultivate CQ project is co-funded by the European Union under the Erasmus+ Programme.
         </p>

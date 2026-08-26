@@ -109,7 +109,7 @@ export default function Step3Feedback({
           disabled={submitting}
           className="rounded-lg bg-blue-600 px-8 py-2.5 font-medium text-white transition hover:bg-blue-700 disabled:opacity-60"
         >
-          {submitting ? 'Submitting\u2026' : 'Submit & see my results'}
+          {submitting ? 'Submitting…' : 'Submit & see my results'}
         </button>
       </div>
     </div>

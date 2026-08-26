@@ -10,7 +10,7 @@ export default function Header() {
       <div className="max-w-6xl mx-auto flex items-center justify-between gap-6 px-6 py-4 flex-wrap">
         <div className="flex items-center gap-6 flex-wrap">
           <img src={danaker} alt="Danaker" className="h-14 w-auto" />
-          <img src={ishoj} alt="Ish\u00f8j Ung Kultur" className="h-9 w-auto" />
+          <img src={ishoj} alt="Ishøj Ung Kultur" className="h-9 w-auto" />
           <img src={suatas} alt="Suatas Project Academy" className="h-12 w-auto" />
         </div>
         <img src={cultivateCq} alt="Cultivate CQ" className="h-16 w-auto" />

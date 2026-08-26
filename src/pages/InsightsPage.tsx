@@ -92,7 +92,7 @@ export default function InsightsPage() {
         </div>
 
         {error && <p className="text-rose-600">{error}</p>}
-        {!data && !error && <p className="text-slate-500">Loading insights\u2026</p>}
+        {!data && !error && <p className="text-slate-500">Loading insights…</p>}
 
         {data && (
           <div className="space-y-10">
@@ -111,13 +111,13 @@ export default function InsightsPage() {
                 ].map((val, i) => (
                   <div key={i}>
                     <div className="text-slate-500">{PART_LABELS[i]}</div>
-                    <div className="font-semibold text-slate-900">{val ?? '\u2013'}</div>
+                    <div className="font-semibold text-slate-900">{val ?? '–'}</div>
                   </div>
                 ))}
               </div>
               <div className="mt-4 text-sm text-slate-600">
                 Average overall CQ score:{' '}
-                <span className="font-semibold text-slate-900">{data.totals.avg_total ?? '\u2013'}</span>{' '}
+                <span className="font-semibold text-slate-900">{data.totals.avg_total ?? '–'}</span>{' '}
                 / 100
               </div>
             </div>

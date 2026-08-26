@@ -25,7 +25,7 @@ export default function Results({ answers }: Props) {
       </p>
 
       <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-6 mb-8 text-center">
-        <div className="text-sm font-medium text-blue-700 mb-1">Overall CQ (20\u2013100)</div>
+        <div className="text-sm font-medium text-blue-700 mb-1">Overall CQ (20–100)</div>
         <div className="text-5xl font-bold text-slate-900">{total}</div>
         <div className="mt-2 inline-block rounded-full bg-blue-600 px-4 py-1 text-sm font-medium text-white">
           {band.label}
@@ -39,7 +39,7 @@ export default function Results({ answers }: Props) {
             <div key={part.key} className="rounded-xl border border-slate-200 p-5">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="font-semibold text-slate-900">
-                  {part.title}: {PART_LABELS[part.key]} (0\u201320)
+                  {part.title}: {PART_LABELS[part.key]} (0–20)
                 </h2>
                 <span className="font-bold text-slate-900">{score}</span>
               </div>
@@ -53,11 +53,11 @@ export default function Results({ answers }: Props) {
       </div>
 
       <div className="mt-8 grid grid-cols-5 gap-1 text-center text-xs text-slate-500">
-        <div>0\u201324<br />Needs focus</div>
-        <div>25\u201343<br />Emerging</div>
-        <div>44\u201362<br />Developing</div>
-        <div>63\u201380<br />Strong</div>
-        <div>81\u2013100<br />Very strong</div>
+        <div>0–24<br />Needs focus</div>
+        <div>25–43<br />Emerging</div>
+        <div>44–62<br />Developing</div>
+        <div>63–80<br />Strong</div>
+        <div>81–100<br />Very strong</div>
       </div>
     </div>
   )

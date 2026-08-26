@@ -78,7 +78,7 @@ function LoginForm({ onSuccess }: { onSuccess: (token: string) => void }) {
         disabled={loading}
         className="w-full rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
       >
-        {loading ? 'Signing in\u2026' : 'Sign in'}
+        {loading ? 'Signing in…' : 'Sign in'}
       </button>
       <p className="text-center mt-6">
         <Link to="/" className="text-sm text-blue-600 hover:underline">
@@ -97,7 +97,7 @@ function ExpandedAnswers({ row }: { row: SubmissionRow }) {
           <span className="text-slate-500 pr-2 truncate" title={q.text}>
             Q{q.id}
           </span>
-          <span className="font-medium text-slate-800">{String(row[`q${q.id}`] ?? '\u2013')}</span>
+          <span className="font-medium text-slate-800">{String(row[`q${q.id}`] ?? '–')}</span>
         </div>
       ))}
     </div>
@@ -136,7 +136,7 @@ function Dashboard({ token }: { token: string }) {
     )
   }
 
-  if (!rows) return <p className="text-center text-slate-500">Loading entries\u2026</p>
+  if (!rows) return <p className="text-center text-slate-500">Loading entries…</p>
 
   const filtered = rows.filter((r) =>
     search.trim() === ''
@@ -189,13 +189,13 @@ function Dashboard({ token }: { token: string }) {
                 <tr className="border-t border-slate-100 hover:bg-slate-50">
                   <td className="px-3 py-2">{r.email}</td>
                   <td className="px-3 py-2 whitespace-nowrap">
-                    {r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : '\u2013'}
+                    {r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : '–'}
                   </td>
-                  <td className="px-3 py-2">{r.age ?? '\u2013'}</td>
-                  <td className="px-3 py-2">{r.gender ?? '\u2013'}</td>
-                  <td className="px-3 py-2">{r.country ?? '\u2013'}</td>
-                  <td className="px-3 py-2">{r.nationality ?? '\u2013'}</td>
-                  <td className="px-3 py-2">{r.education ?? '\u2013'}</td>
+                  <td className="px-3 py-2">{r.age ?? '–'}</td>
+                  <td className="px-3 py-2">{r.gender ?? '–'}</td>
+                  <td className="px-3 py-2">{r.country ?? '–'}</td>
+                  <td className="px-3 py-2">{r.nationality ?? '–'}</td>
+                  <td className="px-3 py-2">{r.education ?? '–'}</td>
                   <td className="px-3 py-2 text-right font-semibold">{r.total_score}</td>
                   <td className="px-3 py-2 text-right">
                     <button
