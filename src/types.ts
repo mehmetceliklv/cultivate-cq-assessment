@@ -1,4 +1,6 @@
 export interface Demographics {
+  assessmentType: 'pre' | 'post' | ''
+  joinedTraining: 'yes' | 'no' | ''
   email: string
   age: string
   gender: string
@@ -19,6 +21,8 @@ export interface Feedback {
 }
 
 export const EMPTY_DEMOGRAPHICS: Demographics = {
+  assessmentType: '',
+  joinedTraining: '',
   email: '',
   age: '',
   gender: '',

@@ -4,6 +4,8 @@ import { ALL_QUESTIONS } from '../data/questions'
 
 interface SubmissionRow {
   id: string
+  assessment_type: 'pre' | 'post'
+  joined_training: boolean | null
   email: string
   submitted_at: string | null
   age: number | null
@@ -138,6 +140,7 @@ function Dashboard({ token }: { token: string }) {
   const [error, setError] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  const [typeFilter, setTypeFilter] = useState<'all' | 'pre' | 'post'>('all')
 
   useEffect(() => {
     fetch('/api/admin-data', { headers: { Authorization: `Bearer ${token}` } })
@@ -167,17 +170,21 @@ function Dashboard({ token }: { token: string }) {
 
   if (!rows) return <p className="text-center text-slate-500">Loading entries…</p>
 
-  const filtered = rows.filter((r) =>
-    search.trim() === ''
-      ? true
-      : [r.email, r.country, r.nationality].some((v) =>
-          (v || '').toLowerCase().includes(search.toLowerCase())
-        )
-  )
+  const filtered = rows
+    .filter((r) => (typeFilter === 'all' ? true : r.assessment_type === typeFilter))
+    .filter((r) =>
+      search.trim() === ''
+        ? true
+        : [r.email, r.country, r.nationality].some((v) =>
+            (v || '').toLowerCase().includes(search.toLowerCase())
+          )
+    )
+  const preCount = rows.filter((r) => r.assessment_type === 'pre').length
+  const postCount = rows.filter((r) => r.assessment_type === 'post').length
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-slate-900">
           Submissions <span className="text-slate-400 font-normal">({rows.length})</span>
         </h1>
@@ -197,10 +204,27 @@ function Dashboard({ token }: { token: string }) {
         </div>
       </div>
 
+      <div className="flex gap-2 mb-6">
+        {(['all', 'pre', 'post'] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTypeFilter(t)}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+              typeFilter === t
+                ? 'bg-blue-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            {t === 'all' ? `All (${rows.length})` : t === 'pre' ? `Pre-Assessment (${preCount})` : `Post-Assessment (${postCount})`}
+          </button>
+        ))}
+      </div>
+
       <div className="overflow-x-auto rounded-xl border border-slate-200">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-600 text-left">
             <tr>
+              <th className="px-3 py-2 font-medium">Type</th>
               <th className="px-3 py-2 font-medium">Email</th>
               <th className="px-3 py-2 font-medium">Submitted</th>
               <th className="px-3 py-2 font-medium">Age</th>
@@ -208,6 +232,7 @@ function Dashboard({ token }: { token: string }) {
               <th className="px-3 py-2 font-medium">Country</th>
               <th className="px-3 py-2 font-medium">Nationality</th>
               <th className="px-3 py-2 font-medium">Education</th>
+              <th className="px-3 py-2 font-medium">Trained?</th>
               <th className="px-3 py-2 font-medium text-right">Total</th>
               <th className="px-3 py-2" />
             </tr>
@@ -216,6 +241,17 @@ function Dashboard({ token }: { token: string }) {
             {filtered.map((r) => (
               <Fragment key={r.id}>
                 <tr className="border-t border-slate-100 hover:bg-slate-50">
+                  <td className="px-3 py-2">
+                    <span
+                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                        r.assessment_type === 'post'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-blue-100 text-blue-700'
+                      }`}
+                    >
+                      {r.assessment_type === 'post' ? 'Post' : 'Pre'}
+                    </span>
+                  </td>
                   <td className="px-3 py-2">{r.email}</td>
                   <td className="px-3 py-2 whitespace-nowrap">
                     {r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : '–'}
@@ -225,6 +261,9 @@ function Dashboard({ token }: { token: string }) {
                   <td className="px-3 py-2">{r.country ?? '–'}</td>
                   <td className="px-3 py-2">{r.nationality ?? '–'}</td>
                   <td className="px-3 py-2">{r.education ?? '–'}</td>
+                  <td className="px-3 py-2">
+                    {r.joined_training === null ? '–' : r.joined_training ? 'Yes' : 'No'}
+                  </td>
                   <td className="px-3 py-2 text-right font-semibold">{r.total_score}</td>
                   <td className="px-3 py-2 text-right">
                     <button
@@ -237,7 +276,7 @@ function Dashboard({ token }: { token: string }) {
                 </tr>
                 {expanded === r.id && (
                   <tr className="border-t border-slate-100 bg-slate-50/60">
-                    <td colSpan={9} className="px-4 py-4">
+                    <td colSpan={11} className="px-4 py-4">
                       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4 text-sm">
                         <div>
                           <span className="text-slate-500 block">Part 1</span>

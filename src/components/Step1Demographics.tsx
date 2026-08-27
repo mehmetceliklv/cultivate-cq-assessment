@@ -37,6 +37,8 @@ export default function Step1Demographics({ data, onChange, onNext }: Props) {
 
   const isValid =
     data.consent &&
+    data.assessmentType !== '' &&
+    data.joinedTraining !== '' &&
     data.email.trim() !== '' &&
     data.age.trim() !== '' &&
     data.gender !== '' &&
@@ -78,6 +80,74 @@ export default function Step1Demographics({ data, onChange, onNext }: Props) {
           After you complete the statements, your CQ profile will be automatically calculated in
           four areas: metacognitive, cognitive, motivational, and behavioural.
         </p>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 p-5 mb-6">
+        <span className="block text-sm font-medium text-slate-700 mb-3">
+          Which assessment are you completing today?
+          <span className="text-rose-500"> *</span>
+        </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => set('assessmentType', 'pre')}
+            className={`rounded-lg border px-4 py-3 text-left transition ${
+              data.assessmentType === 'pre'
+                ? 'border-blue-600 bg-blue-600 text-white'
+                : 'border-slate-300 bg-white text-slate-700 hover:border-blue-400'
+            }`}
+          >
+            <span className="block font-medium">Pre-Assessment</span>
+            <span className={`block text-xs mt-0.5 ${data.assessmentType === 'pre' ? 'text-blue-100' : 'text-slate-500'}`}>
+              I'm filling this in for the first time, before training
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => set('assessmentType', 'post')}
+            className={`rounded-lg border px-4 py-3 text-left transition ${
+              data.assessmentType === 'post'
+                ? 'border-blue-600 bg-blue-600 text-white'
+                : 'border-slate-300 bg-white text-slate-700 hover:border-blue-400'
+            }`}
+          >
+            <span className="block font-medium">Post-Assessment</span>
+            <span className={`block text-xs mt-0.5 ${data.assessmentType === 'post' ? 'text-blue-100' : 'text-slate-500'}`}>
+              I already completed the pre-assessment and I'm filling this in again after training
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 p-5 mb-8">
+        <span className="block text-sm font-medium text-slate-700 mb-3">
+          Did you take part in the Cultivate CQ training sessions?
+          <span className="text-rose-500"> *</span>
+        </span>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => set('joinedTraining', 'yes')}
+            className={`rounded-lg border px-6 py-2 text-sm transition ${
+              data.joinedTraining === 'yes'
+                ? 'border-blue-600 bg-blue-600 text-white'
+                : 'border-slate-300 bg-white text-slate-700 hover:border-blue-400'
+            }`}
+          >
+            Yes
+          </button>
+          <button
+            type="button"
+            onClick={() => set('joinedTraining', 'no')}
+            className={`rounded-lg border px-6 py-2 text-sm transition ${
+              data.joinedTraining === 'no'
+                ? 'border-blue-600 bg-blue-600 text-white'
+                : 'border-slate-300 bg-white text-slate-700 hover:border-blue-400'
+            }`}
+          >
+            No
+          </button>
+        </div>
       </div>
 
       <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-5 mb-8">

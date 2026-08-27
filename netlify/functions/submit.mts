@@ -2,6 +2,8 @@ import type { Context, Config } from '@netlify/functions'
 import { neon } from '@neondatabase/serverless'
 
 interface Demographics {
+  assessmentType: 'pre' | 'post' | ''
+  joinedTraining: 'yes' | 'no' | ''
   email: string
   age: string
   gender: string
@@ -70,6 +72,12 @@ export default async (req: Request, _context: Context) => {
   if (!d || !d.email || !d.consent) {
     return new Response('Missing required demographic fields or consent', { status: 400 })
   }
+  if (d.assessmentType !== 'pre' && d.assessmentType !== 'post') {
+    return new Response('Missing or invalid assessment type', { status: 400 })
+  }
+  if (d.joinedTraining !== 'yes' && d.joinedTraining !== 'no') {
+    return new Response('Missing or invalid training participation answer', { status: 400 })
+  }
   for (let i = 1; i <= 25; i++) {
     if (typeof answers[i] !== 'number') {
       return new Response(`Missing answer for question ${i}`, { status: 400 })
@@ -88,6 +96,7 @@ export default async (req: Request, _context: Context) => {
   try {
     await sql`
       INSERT INTO submissions (
+        assessment_type, joined_training,
         email, age, gender, country, nationality, education,
         professional_affiliation, languages, countries_visited,
         q1, q2, q3, q4, q5, q6, q7, q8, q9, q10,
@@ -97,6 +106,7 @@ export default async (req: Request, _context: Context) => {
         tool_duration, relevant_statements, unclear_wording, interested_events, suggestions,
         consent
       ) VALUES (
+        ${d.assessmentType}, ${d.joinedTraining === 'yes'},
         ${d.email}, ${toIntOrNull(d.age)}, ${d.gender}, ${d.country}, ${d.nationality}, ${d.education},
         ${d.professionalAffiliation || null}, ${d.languages}, ${toIntOrNull(d.countriesVisited)},
         ${answers[1]}, ${answers[2]}, ${answers[3]}, ${answers[4]}, ${answers[5]},
@@ -115,7 +125,7 @@ export default async (req: Request, _context: Context) => {
     return new Response('Failed to save submission', { status: 500 })
   }
 
-  return new Response(JSON.stringify({ ok: true }), {
+  return new Response(JSON.stringify({ ok: true, assessmentType: d.assessmentType }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   })

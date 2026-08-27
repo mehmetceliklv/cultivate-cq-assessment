@@ -91,7 +91,7 @@ export default function AssessmentPage() {
           />
         )}
 
-        {step === 4 && <Results answers={answers} />}
+        {step === 4 && <Results answers={answers} assessmentType={demographics.assessmentType} />}
 
         <footer className="text-center text-sm text-slate-500 mt-10 pb-10 space-y-2">
           <p className="font-medium text-slate-600">Cultivate CQ Team</p>

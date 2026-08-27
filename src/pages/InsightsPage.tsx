@@ -20,6 +20,7 @@ interface CountRow {
 }
 
 interface InsightsData {
+  type: 'all' | 'pre' | 'post'
   totals: { n: number; avgTotal: number | null }
   scoreStats: {
     min_score: number | null
@@ -46,6 +47,16 @@ interface InsightsData {
     unclear_wording: string | null
     suggestions: string | null
     interested_events: string | null
+  }[]
+  compareByType: {
+    assessment_type: 'pre' | 'post'
+    n: number
+    mean_score: number | null
+    mean_part1: number | null
+    mean_part2: number | null
+    mean_part3: number | null
+    mean_part4: number | null
+    mean_part5: number | null
   }[]
 }
 
@@ -145,26 +156,80 @@ function LanguageBar({ data }: { data: CountRow[] }) {
 export default function InsightsPage() {
   const [data, setData] = useState<InsightsData | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [type, setType] = useState<'all' | 'pre' | 'post'>('pre')
 
   useEffect(() => {
-    fetch('/api/insights')
+    setData(null)
+    fetch(`/api/insights?type=${type}`)
       .then((res) => {
         if (!res.ok) throw new Error('Could not load insights.')
         return res.json()
       })
       .then(setData)
       .catch((e) => setError(e.message))
-  }, [])
+  }, [type])
+
+  const preCompare = data?.compareByType.find((c) => c.assessment_type === 'pre')
+  const postCompare = data?.compareByType.find((c) => c.assessment_type === 'post')
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 via-slate-50 to-emerald-50/60 py-10 px-6">
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-slate-900">Public Insights</h1>
           <Link to="/" className="text-sm text-blue-600 hover:underline">
             &larr; Back to assessment
           </Link>
         </div>
+
+        <div className="flex gap-2 mb-8">
+          {(['pre', 'post', 'all'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setType(t)}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                type === t ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              {t === 'pre' ? 'Pre-Assessment' : t === 'post' ? 'Post-Assessment' : 'All'}
+            </button>
+          ))}
+        </div>
+
+        {(preCompare || postCompare) && (
+          <section className="mb-10">
+            <h2 className="text-lg font-bold text-slate-900 mb-1">Pre vs Post Comparison</h2>
+            <p className="text-sm text-slate-500 mb-4">
+              Average overall CQ score before and after training, across all respondents.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-5 text-center">
+                <div className="text-xs font-medium text-blue-700 mb-1">Pre-Assessment</div>
+                <div className="text-3xl font-bold text-slate-900">
+                  {preCompare ? preCompare.mean_score : '–'}
+                </div>
+                <div className="text-xs text-slate-500 mt-1">
+                  {preCompare ? `n = ${preCompare.n}` : 'No responses yet'}
+                </div>
+              </div>
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-5 text-center">
+                <div className="text-xs font-medium text-emerald-700 mb-1">Post-Assessment</div>
+                <div className="text-3xl font-bold text-slate-900">
+                  {postCompare ? postCompare.mean_score : '–'}
+                </div>
+                <div className="text-xs text-slate-500 mt-1">
+                  {postCompare ? `n = ${postCompare.n}` : 'No responses yet'}
+                </div>
+              </div>
+            </div>
+            {preCompare && postCompare && preCompare.mean_score !== null && postCompare.mean_score !== null && (
+              <p className="text-sm text-slate-600 mt-3 text-center">
+                {postCompare.mean_score > preCompare.mean_score ? 'Up' : postCompare.mean_score < preCompare.mean_score ? 'Down' : 'No change'}{' '}
+                {Math.abs(Math.round((postCompare.mean_score - preCompare.mean_score) * 10) / 10)} points on average since pre-assessment.
+              </p>
+            )}
+          </section>
+        )}
 
         {error && <p className="text-rose-600">{error}</p>}
         {!data && !error && <p className="text-slate-500">Loading insights&hellip;</p>}

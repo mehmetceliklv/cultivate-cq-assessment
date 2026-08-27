@@ -1,12 +1,17 @@
 import type { Context, Config } from '@netlify/functions'
 import { neon } from '@neondatabase/serverless'
 
-export default async (_req: Request, _context: Context) => {
+export default async (req: Request, _context: Context) => {
   const databaseUrl = Netlify.env.get('DATABASE_URL')
   if (!databaseUrl) {
     return new Response('Server misconfiguration', { status: 500 })
   }
   const sql = neon(databaseUrl)
+
+  const url = new URL(req.url)
+  const rawType = url.searchParams.get('type')
+  const type: 'all' | 'pre' | 'post' =
+    rawType === 'all' || rawType === 'pre' || rawType === 'post' ? rawType : 'pre'
 
   const [
     totals,
@@ -20,8 +25,9 @@ export default async (_req: Request, _context: Context) => {
     byEducation,
     byLanguage,
     feedback,
+    compareByType,
   ] = await Promise.all([
-    sql`SELECT count(*)::int AS n FROM submissions`,
+    sql`SELECT count(*)::int AS n FROM submissions WHERE (${type} = 'all' OR assessment_type = ${type})`,
     sql`
       SELECT
         min(total_score)::int AS min_score,
@@ -29,6 +35,7 @@ export default async (_req: Request, _context: Context) => {
         round(avg(total_score)::numeric, 1) AS mean_score,
         round(percentile_cont(0.5) WITHIN GROUP (ORDER BY total_score)::numeric, 1) AS median_score
       FROM submissions
+      WHERE (${type} = 'all' OR assessment_type = ${type})
     `,
     sql`
       SELECT
@@ -41,6 +48,7 @@ export default async (_req: Request, _context: Context) => {
         END AS band,
         count(*)::int AS n
       FROM submissions
+      WHERE (${type} = 'all' OR assessment_type = ${type})
       GROUP BY 1
     `,
     sql`
@@ -51,10 +59,11 @@ export default async (_req: Request, _context: Context) => {
         round(avg(part4_score)::numeric, 2) AS mean_part4,
         round(avg(part5_score)::numeric, 2) AS mean_part5
       FROM submissions
+      WHERE (${type} = 'all' OR assessment_type = ${type})
     `,
     sql`
       SELECT nullif(initcap(trim(gender)), '') AS label, count(*)::int AS n
-      FROM submissions GROUP BY 1 ORDER BY n DESC
+      FROM submissions WHERE (${type} = 'all' OR assessment_type = ${type}) GROUP BY 1 ORDER BY n DESC
     `,
     sql`
       SELECT
@@ -68,24 +77,24 @@ export default async (_req: Request, _context: Context) => {
           ELSE 'Unknown'
         END AS label,
         count(*)::int AS n
-      FROM submissions GROUP BY 1 ORDER BY n DESC
+      FROM submissions WHERE (${type} = 'all' OR assessment_type = ${type}) GROUP BY 1 ORDER BY n DESC
     `,
     sql`
       SELECT nullif(initcap(trim(country)), '') AS label, count(*)::int AS n
-      FROM submissions GROUP BY 1 ORDER BY n DESC LIMIT 10
+      FROM submissions WHERE (${type} = 'all' OR assessment_type = ${type}) GROUP BY 1 ORDER BY n DESC LIMIT 10
     `,
     sql`
       SELECT nullif(initcap(trim(nationality)), '') AS label, count(*)::int AS n
-      FROM submissions GROUP BY 1 ORDER BY n DESC LIMIT 10
+      FROM submissions WHERE (${type} = 'all' OR assessment_type = ${type}) GROUP BY 1 ORDER BY n DESC LIMIT 10
     `,
     sql`
       SELECT nullif(initcap(trim(education)), '') AS label, count(*)::int AS n
-      FROM submissions GROUP BY 1 ORDER BY n DESC
+      FROM submissions WHERE (${type} = 'all' OR assessment_type = ${type}) GROUP BY 1 ORDER BY n DESC
     `,
     sql`
       SELECT initcap(trim(lang)) AS label, count(*)::int AS n
       FROM submissions, unnest(string_to_array(languages, ',')) AS lang
-      WHERE trim(lang) <> ''
+      WHERE trim(lang) <> '' AND (${type} = 'all' OR assessment_type = ${type})
       GROUP BY 1
       ORDER BY n DESC
       LIMIT 12
@@ -93,11 +102,23 @@ export default async (_req: Request, _context: Context) => {
     sql`
       SELECT relevant_statements, unclear_wording, suggestions, interested_events
       FROM submissions
-      WHERE relevant_statements IS NOT NULL
-         OR unclear_wording IS NOT NULL
-         OR suggestions IS NOT NULL
+      WHERE (relevant_statements IS NOT NULL OR unclear_wording IS NOT NULL OR suggestions IS NOT NULL)
+        AND (${type} = 'all' OR assessment_type = ${type})
       ORDER BY submitted_at DESC NULLS LAST
       LIMIT 12
+    `,
+    sql`
+      SELECT
+        assessment_type,
+        count(*)::int AS n,
+        round(avg(total_score)::numeric, 1) AS mean_score,
+        round(avg(part1_score)::numeric, 2) AS mean_part1,
+        round(avg(part2_score)::numeric, 2) AS mean_part2,
+        round(avg(part3_score)::numeric, 2) AS mean_part3,
+        round(avg(part4_score)::numeric, 2) AS mean_part4,
+        round(avg(part5_score)::numeric, 2) AS mean_part5
+      FROM submissions
+      GROUP BY assessment_type
     `,
   ])
 
@@ -105,6 +126,7 @@ export default async (_req: Request, _context: Context) => {
 
   return new Response(
     JSON.stringify({
+      type,
       totals: { n: totals[0].n, avgTotal },
       scoreStats: scoreStats[0],
       bandDistribution,
@@ -116,6 +138,7 @@ export default async (_req: Request, _context: Context) => {
       byEducation,
       byLanguage,
       feedback,
+      compareByType,
     }),
     { status: 200, headers: { 'Content-Type': 'application/json' } }
   )

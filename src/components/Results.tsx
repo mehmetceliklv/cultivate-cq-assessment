@@ -2,6 +2,7 @@ import { PARTS, PART_LABELS, PART_INTERPRETATION, partScore, totalScore, bandFor
 
 interface Props {
   answers: Record<number, number>
+  assessmentType?: 'pre' | 'post' | ''
 }
 
 function ScoreBar({ score, max }: { score: number; max: number }) {
@@ -13,16 +14,23 @@ function ScoreBar({ score, max }: { score: number; max: number }) {
   )
 }
 
-export default function Results({ answers }: Props) {
+export default function Results({ answers, assessmentType }: Props) {
   const total = totalScore(answers)
   const band = bandFor(total)
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900 mb-1">Your CQ Profile</h1>
-      <p className="text-slate-600 mb-8">
+      <p className="text-slate-600 mb-2">
         Thanks for completing the assessment. Here is how your responses break down.
       </p>
+      {assessmentType && (
+        <p className="mb-6">
+          <span className="inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+            Recorded as your {assessmentType === 'post' ? 'Post-Assessment' : 'Pre-Assessment'}
+          </span>
+        </p>
+      )}
 
       <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-6 mb-8 text-center">
         <div className="text-sm font-medium text-blue-700 mb-1">Overall CQ (20–100)</div>
