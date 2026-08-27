@@ -141,6 +141,7 @@ function Dashboard({ token }: { token: string }) {
   const [expanded, setExpanded] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<'all' | 'pre' | 'post'>('all')
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     fetch('/api/admin-data', { headers: { Authorization: `Bearer ${token}` } })
@@ -182,6 +183,53 @@ function Dashboard({ token }: { token: string }) {
   const preCount = rows.filter((r) => r.assessment_type === 'pre').length
   const postCount = rows.filter((r) => r.assessment_type === 'post').length
 
+  const exportToExcel = async () => {
+    setExporting(true)
+    try {
+      const XLSX = await import('xlsx')
+      const sheetRows = filtered.map((r) => {
+      const row: Record<string, string | number> = {
+        'Assessment Type': r.assessment_type === 'post' ? 'Post' : 'Pre',
+        Trained: r.joined_training === null ? '' : r.joined_training ? 'Yes' : 'No',
+        Email: r.email,
+        'Submitted At': r.submitted_at ?? '',
+        Age: r.age ?? '',
+        Gender: r.gender ?? '',
+        Country: r.country ?? '',
+        Nationality: r.nationality ?? '',
+        Education: r.education ?? '',
+        'Professional Affiliation': r.professional_affiliation ?? '',
+        Languages: r.languages ?? '',
+        'Countries Visited': r.countries_visited ?? '',
+      }
+      for (const q of ALL_QUESTIONS) {
+        row[`Q${q.id}`] = String(r[`q${q.id}`] ?? '')
+      }
+      row['Part 1 Score'] = r.part1_score
+      row['Part 2 Score'] = r.part2_score
+      row['Part 3 Score'] = r.part3_score
+      row['Part 4 Score'] = r.part4_score
+      row['Part 5 Score'] = r.part5_score
+      row['Total Score'] = r.total_score
+      row['Tool Duration'] = r.tool_duration ?? ''
+      row['Relevant Statements'] = r.relevant_statements ?? ''
+      row['Unclear Wording'] = r.unclear_wording ?? ''
+      row['Interested In Events'] = r.interested_events ?? ''
+      row['Suggestions'] = r.suggestions ?? ''
+      return row
+    })
+
+      const worksheet = XLSX.utils.json_to_sheet(sheetRows)
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Submissions')
+      const dateStr = new Date().toISOString().slice(0, 10)
+      const suffix = typeFilter === 'all' ? 'all' : typeFilter
+      XLSX.writeFile(workbook, `cultivate-cq-submissions-${suffix}-${dateStr}.xlsx`)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
@@ -195,6 +243,13 @@ function Dashboard({ token }: { token: string }) {
             onChange={(e) => setSearch(e.target.value)}
             className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500"
           />
+          <button
+            onClick={exportToExcel}
+            disabled={filtered.length === 0 || exporting}
+            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+          >
+            {exporting ? 'Preparing…' : `Download Excel (${filtered.length})`}
+          </button>
           <Link to="/insights" className="text-sm text-blue-600 hover:underline">
             Insights
           </Link>
